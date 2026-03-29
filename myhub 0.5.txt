@@ -1,0 +1,314 @@
+-- [[ DAEMON EXTRA - BRAINROT FIX + RED GALAXY + ANTI-DIE ]] --
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local Colors = {
+    BackgroundDark = Color3.fromRGB(0, 0, 0),
+    Purple = Color3.fromRGB(139, 0, 0),
+    Pink = Color3.fromRGB(220, 20, 60),
+    White = Color3.fromRGB(255, 255, 255),
+    Blue = Color3.fromRGB(0, 170, 255),
+    RinneRed = Color3.fromRGB(255, 0, 30),
+}
+
+-- Logic Variables
+local FloatHeight, SpinSpeed = 11, 50
+local floatConn, galaxyConn, antiDieConn = nil, nil, nil
+local isFloating, galaxyEnabled, spinEnabled, antiDieEnabled = false, false, false, false
+local GalaxyFolder = nil
+
+local Taunts = {
+    "!DaemonHub On Top!", 
+    "Imagine losing to a Daemon user...", 
+    "Daemon Hub > Your Script", 
+    ".gg/notoutyet",
+    "Sit down Daemon is here...",
+}
+
+local function CreateElement(className, properties)
+    local element = Instance.new(className)
+    for k, v in pairs(properties or {}) do element[k] = v end
+    return element
+end
+
+local function CreateGradient(parent, color1, color2, rotation)
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)}
+    gradient.Rotation = rotation or 90
+    gradient.Parent = parent
+    return gradient
+end
+
+-- Falling Star Logic
+local function SpawnFallingStar()
+    if not galaxyEnabled or not GalaxyFolder or not LocalPlayer.Character then return end
+    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local startPos = hrp.Position + Vector3.new(math.random(-800, 800), 600, math.random(-800, 800))
+    local endPos = startPos + Vector3.new(math.random(-500, 500), -500, math.random(-500, 500))
+    
+    local star = CreateElement("Part", {
+        Size = Vector3.new(1, 1, 20),
+        Position = startPos,
+        Color = Colors.RinneRed,
+        Material = "Neon",
+        Anchored = true,
+        CanCollide = false,
+        CFrame = CFrame.new(startPos, endPos),
+        Parent = GalaxyFolder
+    })
+    
+    TweenService:Create(star, TweenInfo.new(1), {Position = endPos, Transparency = 1}):Play()
+    task.delay(1, function() star:Destroy() end)
+end
+
+-- Main ScreenGui
+local ScreenGui = CreateElement("ScreenGui", {Name = "ExtraPanelGui", Parent = PlayerGui, ResetOnSpawn = false})
+
+local function TriggerFlash()
+    local flashFrame = CreateElement("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(255, 0, 0),
+        BorderSizePixel = 0,
+        ZIndex = 100,
+        Parent = ScreenGui
+    })
+    local tween = TweenService:Create(flashFrame, TweenInfo.new(0.4), {BackgroundTransparency = 1})
+    tween:Play()
+    tween.Completed:Connect(function() flashFrame:Destroy() end)
+end
+
+local function PlayMadaraVoice()
+    local sound = CreateElement("Sound", {
+        SoundId = "rbxassetid://94417536898415",
+        Volume = 2.5,
+        Parent = SoundService
+    })
+    sound:Play()
+    sound.Ended:Connect(function() sound:Destroy() end)
+end
+
+local ExtraPanel = CreateElement("Frame", {
+    Size = UDim2.new(0, 160, 0, 420),
+    Position = UDim2.new(0.5, -80, 0.5, -210),
+    BackgroundColor3 = Colors.BackgroundDark,
+    BackgroundTransparency = 0.15,
+    BorderSizePixel = 0,
+    Active = true,
+    Parent = ScreenGui
+})
+CreateElement("UICorner", {CornerRadius = UDim.new(0, 15), Parent = ExtraPanel})
+CreateElement("UIStroke", {Color = Colors.Purple, Thickness = 2, Transparency = 0.3, Parent = ExtraPanel})
+
+local ExtraHeader = CreateElement("TextLabel", {
+    Size = UDim2.new(1, 0, 0, 40),
+    BackgroundColor3 = Colors.Purple,
+    BackgroundTransparency = 0.3,
+    Text = "EXTRA",
+    TextColor3 = Colors.White,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    Parent = ExtraPanel
+})
+CreateElement("UICorner", {CornerRadius = UDim.new(0, 15), Parent = ExtraHeader})
+CreateGradient(ExtraHeader, Colors.Purple, Colors.Pink, 45)
+
+-- Draggable Logic
+local dragToggle, dragStart, startPos
+ExtraHeader.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true; dragStart = input.Position; startPos = ExtraPanel.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragToggle = false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        ExtraPanel.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local function CreateBtn(text, pos, callback)
+    local btn = CreateElement("TextButton", {
+        Size = UDim2.new(0.9, 0, 0, 35),
+        Position = pos,
+        BackgroundColor3 = Colors.Purple,
+        BackgroundTransparency = 0.2,
+        Text = text,
+        TextColor3 = Colors.White,
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        Parent = ExtraPanel
+    })
+    CreateElement("UICorner", {CornerRadius = UDim.new(0, 15), Parent = btn})
+    CreateGradient(btn, Colors.Purple, Colors.Pink, 45)
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
+    return btn
+end
+
+-- Features
+CreateBtn("💬 SEND TAUNT", UDim2.new(0.05, 0, 0, 50), function()
+    local msg = Taunts[math.random(1, #Taunts)]
+    pcall(function() game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(msg) end)
+end)
+
+local GalBtn; GalBtn = CreateBtn("🌙 GALAXY: OFF", UDim2.new(0.05, 0, 0, 95), function()
+    galaxyEnabled = not galaxyEnabled
+    GalBtn.Text = galaxyEnabled and "🌙 GALAXY: ON" or "🌙 GALAXY: OFF"
+    
+    if galaxyEnabled then
+        TriggerFlash()
+        PlayMadaraVoice()
+        for _, obj in pairs(Lighting:GetChildren()) do
+            if obj:IsA("Atmosphere") or obj:IsA("Clouds") or obj:IsA("Sky") then obj:Destroy() end
+        end
+        local sky = Instance.new("Sky", Lighting)
+        sky.SkyboxUp, sky.SkyboxLf, sky.SkyboxRt, sky.SkyboxBk, sky.SkyboxFt, sky.SkyboxDn = "rbxassetid://0","rbxassetid://0","rbxassetid://0","rbxassetid://0","rbxassetid://0","rbxassetid://0"
+        sky.SunTextureId, sky.MoonTextureId = "", ""
+        GalaxyFolder = Instance.new("Folder", workspace)
+        task.spawn(function()
+            while galaxyEnabled do
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    if not GalaxyFolder:FindFirstChild("RedMoon") then
+                        local moon = CreateElement("Part", {Name = "RedMoon", Size = Vector3.new(650, 650, 650), Shape = "Ball", Color = Colors.RinneRed, Material = "Neon", Anchored = true, CanCollide = false, Parent = GalaxyFolder})
+                        local tex = Instance.new("Decal", moon); tex.Texture = "rbxassetid://15613303358"
+                        for _, f in pairs(Enum.NormalId:GetEnumItems()) do local d = tex:Clone(); d.Face = f; d.Parent = moon end
+                    end
+                    local moonPart = GalaxyFolder:FindFirstChild("RedMoon")
+                    if moonPart then moonPart.Position = hrp.Position + Vector3.new(0, 1200, -900) end
+                end
+                task.wait()
+            end
+        end)
+        for i = 1, 1000 do
+            task.spawn(function()
+                local star = CreateElement("Part", {Size = Vector3.new(4, 4, 4), Color = Colors.RinneRed, Material = "Neon", Anchored = true, CanCollide = false, Parent = GalaxyFolder})
+                while star and star.Parent do
+                    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp and (star.Position - hrp.Position).Magnitude > 2200 then
+                        star.Position = hrp.Position + Vector3.new(math.random(-1800, 1800), math.random(400, 1500), math.random(-1800, 1800))
+                    end
+                    task.wait(1.5)
+                end
+            end)
+        end
+        galaxyConn = RunService.Heartbeat:Connect(function() 
+            Lighting.ClockTime = 0; Lighting.Brightness = 0; Lighting.OutdoorAmbient = Color3.fromRGB(60, 0, 0)
+            if math.random(1, 20) == 1 then SpawnFallingStar() end
+        end)
+    else
+        if galaxyConn then galaxyConn:Disconnect() end
+        if GalaxyFolder then GalaxyFolder:Destroy() end
+        Lighting.ClockTime = 14; Lighting.Brightness = 2
+    end
+end)
+
+local SpiBtn; SpiBtn = CreateBtn("🌀 SPIN: OFF", UDim2.new(0.05, 0, 0, 140), function()
+    spinEnabled = not spinEnabled
+    SpiBtn.Text = spinEnabled and "🌀 SPIN: ON" or "🌀 SPIN: OFF"
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if spinEnabled and hrp then
+        local mover = hrp:FindFirstChild("DaemonSpin") or Instance.new("BodyAngularVelocity", hrp)
+        mover.Name = "DaemonSpin"; mover.MaxTorque = Vector3.new(0, math.huge, 0); mover.AngularVelocity = Vector3.new(0, SpinSpeed, 0)
+    elseif hrp and hrp:FindFirstChild("DaemonSpin") then hrp.DaemonSpin:Destroy() end
+end)
+
+CreateBtn("🚀 DROP", UDim2.new(0.05, 0, 0, 185), function()
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then hrp.AssemblyLinearVelocity = Vector3.new(0, 130, 0) task.wait(0.4) hrp.AssemblyLinearVelocity = Vector3.new(0, -600, 0) end
+end)
+
+local FloBtn; FloBtn = CreateBtn("☁️ FLOAT: OFF", UDim2.new(0.05, 0, 0, 230), function()
+    isFloating = not isFloating
+    FloBtn.Text = isFloating and "☁️ FLOAT: ON" or "☁️ FLOAT: OFF"
+    if isFloating then
+        local hrp = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        local hum = LocalPlayer.Character:WaitForChild("Humanoid")
+        local originY = hrp.Position.Y
+        floatConn = RunService.Heartbeat:Connect(function()
+            if not isFloating then if floatConn then floatConn:Disconnect() end return end
+            hrp.Velocity = Vector3.new(hum.MoveDirection.X * 30, (originY + FloatHeight - hrp.Position.Y) * 10, hum.MoveDirection.Z * 30)
+        end)
+    end
+end)
+
+-- Anti-Die Logic Integration
+local function SetupAntiDie()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hum = char:WaitForChild("Humanoid")
+    
+    hum.BreakJointsOnDeath = false
+    hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+
+    local healthConn = hum:GetPropertyChangedSignal("Health"):Connect(function()
+        if antiDieEnabled and hum.Health <= 0 then
+            hum.Health = hum.MaxHealth
+        end
+    end)
+
+    local diedConn = hum.Died:Connect(function()
+        if antiDieEnabled then
+            task.wait()
+            local newHum = Instance.new("Humanoid")
+            newHum.Name = "ReplacedHumanoid"
+            newHum.Parent = char
+            workspace.CurrentCamera.CameraSubject = newHum
+            hum:Destroy()
+        end
+    end)
+    return {healthConn, diedConn}
+end
+
+local DieBtn; DieBtn = CreateBtn("🛡️ ANTI-DIE: OFF", UDim2.new(0.05, 0, 0, 275), function()
+    antiDieEnabled = not antiDieEnabled
+    DieBtn.Text = antiDieEnabled and "🛡️ ANTI-DIE: ON" or "🛡️ ANTI-DIE: OFF"
+    if antiDieEnabled then
+        -- Play requested sound (76175089706312)
+        local sound = CreateElement("Sound", {
+            SoundId = "rbxassetid://76175089706312",
+            Volume = 2,
+            Parent = SoundService,
+            Looped = false
+        })
+        sound:Play()
+        sound.Ended:Connect(function() sound:Destroy() end)
+        
+        local conns = SetupAntiDie()
+        LocalPlayer.CharacterAdded:Connect(SetupAntiDie)
+    end
+end)
+
+-- Slider Helper
+local function CreateSlider(name, y, min, max, default, callback)
+    local label = CreateElement("TextLabel", {Text = name .. ": " .. default, Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 0, 0, y), BackgroundTransparency = 1, TextColor3 = Colors.White, Font = Enum.Font.GothamBold, TextSize = 10, Parent = ExtraPanel})
+    local track = CreateElement("TextButton", {Size = UDim2.new(0.8, 0, 0, 6), Position = UDim2.new(0.1, 0, 0, y + 22), BackgroundColor3 = Color3.fromRGB(50, 50, 50), Text = "", AutoButtonColor = false, Parent = ExtraPanel})
+    local fill = CreateElement("Frame", {Size = UDim2.new((default-min)/(max-min), 0, 1, 0), BackgroundColor3 = Colors.Blue, Parent = track})
+    local knob = CreateElement("Frame", {Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new((default-min)/(max-min), -7, 0.5, -7), BackgroundColor3 = Colors.White, Parent = track})
+    CreateElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = track}); CreateElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = fill}); CreateElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = knob})
+    track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            local move; move = RunService.RenderStepped:Connect(function()
+                local relX = math.clamp((UserInputService:GetMouseLocation().X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+                local val = math.floor(min + (relX * (max - min))); fill.Size = UDim2.new(relX, 0, 1, 0); knob.Position = UDim2.new(relX, -7, 0.5, -7); label.Text = name .. ": " .. val; callback(val)
+            end)
+            local release; release = UserInputService.InputEnded:Connect(function(input2) if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then move:Disconnect(); release:Disconnect() end end)
+        end
+    end)
+end
+
+CreateSlider("FLOAT HEIGHT", 315, 0, 100, 11, function(v) FloatHeight = v end)
+CreateSlider("SPIN SPEED", 365, 0, 300, 50, function(v) 
+    SpinSpeed = v; local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp and hrp:FindFirstChild("DaemonSpin") then hrp.DaemonSpin.AngularVelocity = Vector3.new(0, v, 0) end
+end)
