@@ -270,10 +270,10 @@ local function executeInternalStealAsync(prompt, animalData)
         
         local startTime = os.clock()
         while os.clock() - startTime < 0.5 do
-            StealProgress = (os.clock() - startTime) / 0.5
-            task.wait(0.05)
+            StealProgress = (os.clock() - startTime) / 0.2
+            task.wait(0.2)
         end
-        StealProgress = 1
+        StealProgress = 0.2
         
         if #data.triggerCallbacks > 0 then
             for _, fn in ipairs(data.triggerCallbacks) do
@@ -1738,15 +1738,15 @@ local function toggleAutoMovement(type)
             
             stopMoving()
             waypoints = {
-                {position = Vector3.new(-474, -7, 29), speed = 60},
-                {position = Vector3.new(-473, -7, 29), speed = 60},
-                {position = Vector3.new(-478, -6, 25), speed = 60},
-                {position = Vector3.new(-488, -5, 23), speed = 60},
-                {position = Vector3.new(-488, -5, 23), speed = 60},
-                {position = Vector3.new(-474, -7, 29), speed = 30},
-                {position = Vector3.new(-474, -7, 29), speed = 30},
-                {position = Vector3.new(-475, -7, 118), speed = 30},
-                {position = Vector3.new(-475, -7, 118), speed = 30}
+                {position = Vector3.new(-474, -7, 29), speed = 59},
+                {position = Vector3.new(-473, -7, 29), speed = 59},
+                {position = Vector3.new(-478, -6, 25), speed = 59},
+                {position = Vector3.new(-488, -5, 23), speed = 59},
+                {position = Vector3.new(-488, -5, 23), speed = 59},
+                {position = Vector3.new(-474, -7, 29), speed = 59},
+                {position = Vector3.new(-474, -7, 29), speed = 29.6},
+                {position = Vector3.new(-475, -7, 118), speed = 29.6},
+                {position = Vector3.new(-475, -7, 118), speed = 29.6}
             }
             moving = true
             currentWaypoint = 1
