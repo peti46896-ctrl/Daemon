@@ -1,0 +1,28 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local head = character:WaitForChild("Head")
+
+-- 1. Create the BillboardGui
+local billboard = Instance.new("BillboardGui")
+billboard.Name = "LinkDisplay"
+billboard.Size = UDim2.new(0, 200, 0, 45)
+billboard.Adornee = head
+-- Lowered from 3 down to 1.2 to sit closer to the head
+billboard.StudsOffset = Vector3.new(0, 1.2, 0) 
+billboard.AlwaysOnTop = true 
+billboard.Parent = head
+
+-- 2. Create the TextLabel
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 1, 0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+label.TextStrokeTransparency = 0.2 -- Slightly softer outline
+label.TextScaled = true
+
+-- Updated Font (Clean & Rounded)
+label.Font = Enum.Font.FredokaOne 
+label.Text = "https://discord.gg/TecZUnzAh"
+label.Parent = billboard
+
