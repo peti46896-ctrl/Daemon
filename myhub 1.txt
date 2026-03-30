@@ -259,7 +259,7 @@ local function executeInternalStealAsync(prompt, animalData)
     IsStealing = true
     StealProgress = 0.2
     CurrentStealTarget = animalData
-    StealStartTime = os.clock(0.02)
+    StealStartTime = os.clock(0)
     
     task.spawn(function()
         if #data.holdCallbacks > 0 then
@@ -270,8 +270,8 @@ local function executeInternalStealAsync(prompt, animalData)
         
         local startTime = os.clock()
         while os.clock() - startTime < 0.2 do
-            StealProgress = (os.clock() - startTime) / 0.2
-            task.wait(0.05)
+            StealProgress = (os.clock() - startTime) / 0
+            task.wait(0.5)
         end
         StealProgress = 0.2
         
@@ -281,10 +281,10 @@ local function executeInternalStealAsync(prompt, animalData)
             end
         end
         
-        task.wait(0.1)
+        task.wait(0.5)
         data.ready = true
         
-        task.wait(0.3)
+        task.wait(0.5)
         IsStealing = false
         StealProgress = 0.2
         CurrentStealTarget = nil
